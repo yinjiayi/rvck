@@ -61,9 +61,16 @@ jobs:
       id: stats
       run: |
         echo "开始运行贡献统计..."
+        # 根据分支设置代码分支：test-contrib-stats 使用 tmp-stats，其他使用 rvck-6.6
+        if [ "${{ github.ref_name }}" = "test-contrib-stats" ]; then
+          CODE_BRANCH="tmp-stats"
+        else
+          CODE_BRANCH="${{ secrets.MAIN_BRANCH || 'rvck-6.6' }}"
+        fi
+        echo "统计代码分支: $CODE_BRANCH"
         TZ='Asia/Shanghai' python scripts/contrib_stats/company_stats.py \
-          --main-branch ${{ secrets.MAIN_BRANCH || 'rvck-6.6' }} \
-          --stats-branch contrib-stats \
+          --main-branch "$CODE_BRANCH" \
+          --stats-branch "${{ github.ref_name }}" \
           --remote-url https://github.com/${{ github.repository }}.git
 
         echo "统计完成时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
