@@ -577,6 +577,127 @@ class ContribStats:
 | Open PRs | {github_stats.get('open_prs', 'N/A')} |
 | Closed PRs | {github_stats.get('closed_prs', 'N/A')} |"""
 
+    def _generate_cross_matrix(self, stats):
+        """生成交叉矩阵表格（机构 x 分类）"""
+        categories = ['feature', 'bugfix', 'cleanup', 'config', 'other']
+        category_labels = {
+            'feature': '新功能',
+            'bugfix': '缺陷修复',
+            'cleanup': '代码清理',
+            'config': '配置变更',
+            'other': '其他'
+        }
+
+        # 过滤有贡献的机构
+        active_companies = [(c, stats['companies'][c]) for c in self.companies
+                         if stats['companies'][c]['count'] > 0]
+        if not active_companies:
+            return "暂无机构贡献数据"
+
+        lines = ["### 📊 各机构贡献分类矩阵"]
+        lines.append("")
+        lines.append("| 机构 | " + " | ".join(category_labels[cat] for cat in categories) + " | backport | hardware | 总计 |")
+        lines.append("|------|" + "|".join("--------" for _ in categories) + "|----------|----------|------|")
+
+        for company, company_stat in active_companies:
+            row = [company]
+            cat_stats = company_stat.get('categories', {})
+            for cat in categories:
+                row.append(str(cat_stats.get(cat, 0)))
+            row.append(str(company_stat.get('backports', 0)))
+            row.append(str(sum(company_stat.get('hardware', {}).values())))
+            row.append(str(company_stat['count']))
+            lines.append("| " + " | ".join(row) + " |")
+
+        return "\n".join(lines)
+
+    def _generate_category_leaderboards(self, stats):
+        """生成各分类独立排行榜"""
+        categories = [
+            ('feature', '新功能', '🚀'),
+            ('bugfix', '缺陷修复', '🐛'),
+            ('cleanup', '代码清理', '🧹'),
+            ('config', '配置变更', '⚙️'),
+            ('other', '其他贡献', '📝')
+        ]
+
+        lines = ["### 🏆 各分类贡献排行"]
+        lines.append("")
+
+        for cat_key, cat_name, emoji in categories:
+            lines.append(f"#### {emoji} {cat_name} (Top 3)")
+            lines.append("")
+
+            # 收集各机构该分类的数量
+            rankings = []
+            total_cat = stats['categories'].get(cat_key, 0)
+            for company in self.companies:
+                company_stat = stats['companies'][company]
+                count = company_stat.get('categories', {}).get(cat_key, 0)
+                if count > 0:
+                    percentage = (count / total_cat * 100) if total_cat > 0 else 0
+                    rankings.append((company, count, percentage))
+
+            rankings.sort(key=lambda x: x[1], reverse=True)
+
+            if rankings:
+                lines.append("| 排名 | 机构 | 数量 | 占比 |")
+                lines.append("|------|------|------|------|")
+                medals = ['🥇', '🥈', '🥉']
+                for i, (company, count, pct) in enumerate(rankings[:3]):
+                    medal = medals[i] if i < 3 else f"{i+1}."
+                    lines.append(f"| {medal} | {company} | {count} | {pct:.1f}% |")
+            else:
+                lines.append("*暂无数据*")
+            lines.append("")
+
+        # Backport 和 Hardware 单独展示
+        lines.append("#### 🔄 Backport (主线反合)")
+        lines.append("")
+        backport_rankings = []
+        total_backport = stats.get('backports', 0)
+        for company in self.companies:
+            count = stats['companies'][company].get('backports', 0)
+            if count > 0:
+                percentage = (count / total_backport * 100) if total_backport > 0 else 0
+                backport_rankings.append((company, count, percentage))
+        backport_rankings.sort(key=lambda x: x[1], reverse=True)
+
+        if backport_rankings:
+            lines.append("| 排名 | 机构 | 数量 | 占比 |")
+            lines.append("|------|------|------|------|")
+            medals = ['🥇', '🥈', '🥉']
+            for i, (company, count, pct) in enumerate(backport_rankings[:3]):
+                medal = medals[i] if i < 3 else f"{i+1}."
+                lines.append(f"| {medal} | {company} | {count} | {pct:.1f}% |")
+        else:
+            lines.append("*暂无数据*")
+        lines.append("")
+
+        # Hardware 排行
+        lines.append("#### 🔧 Hardware Support (硬件支持)")
+        lines.append("")
+        hw_rankings = []
+        total_hw = sum(stats.get('hardware', {}).values())
+        for company in self.companies:
+            count = sum(stats['companies'][company].get('hardware', {}).values())
+            if count > 0:
+                percentage = (count / total_hw * 100) if total_hw > 0 else 0
+                hw_rankings.append((company, count, percentage))
+        hw_rankings.sort(key=lambda x: x[1], reverse=True)
+
+        if hw_rankings:
+            lines.append("| 排名 | 机构 | 数量 | 占比 |")
+            lines.append("|------|------|------|------|")
+            medals = ['🥇', '🥈', '🥉']
+            for i, (company, count, pct) in enumerate(hw_rankings[:3]):
+                medal = medals[i] if i < 3 else f"{i+1}."
+                lines.append(f"| {medal} | {company} | {count} | {pct:.1f}% |")
+        else:
+            lines.append("*暂无数据*")
+
+        return "\n".join(lines)
+
     def generate_main_page(self, stats):
         """生成统计主页"""
         # 按贡献数排序
@@ -632,6 +753,10 @@ RVCK 累计合入的补丁涉及代码修改：insert 🟢 +{stats.get('total_in
 
 **硬件平台分布**:
 {self._format_hardware_stats(stats.get('hardware', {}))}
+
+{self._generate_cross_matrix(stats)}
+
+{self._generate_category_leaderboards(stats)}
 
 ### 📊 GitHub 仓库统计
 
@@ -724,45 +849,108 @@ pie title 各机构贡献占比
         return content
 
     def _generate_page_header(self, company, info, stats):
-        """生成页面头部（公共部分）"""
+        """生成页面头部（公共部分）- 画像式展示"""
         company_stats = stats['companies'][company]
+        total_count = company_stats['count']
 
-        cat_stats = company_stats.get('categories', {})
-        cat_lines = []
-        for cat, count in sorted(cat_stats.items(), key=lambda x: x[1], reverse=True):
-            if count > 0:
-                cat_lines.append(f"- {cat}: {count}")
-        categories_text = '\n'.join(cat_lines) if cat_lines else "暂无分类数据"
-
-        hw_stats = company_stats.get('hardware', {})
-        hw_lines = []
-        for hw, count in sorted(hw_stats.items(), key=lambda x: x[1], reverse=True):
-            if count > 0:
-                hw_lines.append(f"- {hw}: {count}")
-        hardware_text = '\n'.join(hw_lines) if hw_lines else "暂无硬件支持数据"
-
-        backport_count = company_stats.get('backports', 0)
-
-        content = f"""# {company} 贡献详情
+        if total_count == 0:
+            return f"""# {company} 贡献详情
 
 <div style="background-color: {info['color']}20; padding: 15px; border-radius: 8px; border-left: 5px solid {info['color']};">
 <p><strong>📊 统计信息</strong></p>
 <ul>
-<li><strong>贡献提交数</strong>: {company_stats['count']}</li>
-<li><strong>backport提交数</strong>: {backport_count}</li>
+<li><strong>贡献提交数</strong>: {total_count}</li>
 <li><strong>统计时间</strong>: {stats['generated_at']}</li>
 <li><strong>主分支</strong>: {stats['main_branch']}</li>
 <li><strong>起始标签</strong>: {stats['start_tag']}</li>
 </ul>
 </div>
 
-## 📁 补丁分类统计
+*该机构暂无贡献数据*
 
-{categories_text}
+## 📧 识别规则
 
-### 硬件支持分布
+- **邮箱后缀**: {', '.join(info['suffixes'])}
+"""
 
-{hardware_text}
+        cat_stats = company_stats.get('categories', {})
+        backport_count = company_stats.get('backports', 0)
+        hw_count = sum(company_stats.get('hardware', {}).values())
+
+        # 找出最活跃的领域
+        all_categories = {
+            '新功能(feature)': cat_stats.get('feature', 0),
+            '缺陷修复(bugfix)': cat_stats.get('bugfix', 0),
+            '代码清理(cleanup)': cat_stats.get('cleanup', 0),
+            '配置变更(config)': cat_stats.get('config', 0),
+            '其他(other)': cat_stats.get('other', 0),
+            '主线反合(backport)': backport_count,
+            '硬件支持(hardware)': hw_count
+        }
+        top_category = max(all_categories.items(), key=lambda x: x[1])
+        top_name, top_count = top_category
+
+        # 计算总体占比（相对于所有机构总提交）
+        total_org_commits = stats.get('commits_with_company', 1)
+        overall_percentage = (total_count / total_org_commits * 100) if total_org_commits > 0 else 0
+
+        # 生成贡献画像表格
+        profile_lines = []
+        profile_lines.append("| 贡献维度 | 数量 | 占比 | 说明 |")
+        profile_lines.append("|----------|------|------|------|")
+
+        dimensions = [
+            ('新功能', 'feature', '新增功能特性'),
+            ('缺陷修复', 'bugfix', '修复代码缺陷'),
+            ('代码清理', 'cleanup', '重构和优化'),
+            ('配置变更', 'config', '配置项调整'),
+            ('其他贡献', 'other', '未分类提交'),
+            ('主线反合', 'backport', '同步主线代码'),
+            ('硬件支持', 'hardware', '硬件平台适配'),
+        ]
+
+        for label, key, desc in dimensions:
+            if key == 'backport':
+                count = backport_count
+            elif key == 'hardware':
+                count = hw_count
+            else:
+                count = cat_stats.get(key, 0)
+
+            pct = (count / total_count * 100) if total_count > 0 else 0
+            bar = "█" * int(pct / 10) + "░" * (10 - int(pct / 10))
+            profile_lines.append(f"| {label} | {count} | {bar} {pct:.1f}% | {desc} |")
+
+        # 硬件平台明细
+        hw_stats = company_stats.get('hardware', {})
+        hw_detail_lines = []
+        if hw_stats:
+            hw_detail_lines.append("**支持的硬件平台**:")
+            for hw, count in sorted(hw_stats.items(), key=lambda x: x[1], reverse=True):
+                pct = (count / hw_count * 100) if hw_count > 0 else 0
+                hw_detail_lines.append(f"- {hw}: {count} ({pct:.1f}%)")
+        else:
+            hw_detail_lines.append("*暂无硬件支持数据*")
+
+        content = f"""# {company} 贡献画像
+
+<div style="background-color: {info['color']}20; padding: 15px; border-radius: 8px; border-left: 5px solid {info['color']};">
+<p><strong>📊 核心数据</strong></p>
+<ul>
+<li><strong>贡献提交数</strong>: {total_count} (占所有机构贡献的 {overall_percentage:.1f}%)</li>
+<li><strong>最活跃领域</strong>: {top_name} ({top_count} 个提交)</li>
+<li><strong>统计周期</strong>: {stats['start_tag']} → {stats['main_commit'][:8]}</li>
+<li><strong>生成时间</strong>: {stats['generated_at']}</li>
+</ul>
+</div>
+
+## 📈 贡献分布
+
+{chr(10).join(profile_lines)}
+
+### 🔧 硬件支持详情
+
+{chr(10).join(hw_detail_lines)}
 
 ## 📧 识别规则
 
