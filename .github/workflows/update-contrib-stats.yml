@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - contrib-stats
+      - test-contrib-stats
     paths:
       - 'scripts/contrib_stats/**'
       - '.github/workflows/update-contrib-stats.yml'
@@ -30,14 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # 除schedule事件外，其他事件只在contrib-stats分支运行
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/contrib-stats'
+    # 在 contrib-stats 和 test-contrib-stats 分支运行
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/contrib-stats' || github.ref == 'refs/heads/test-contrib-stats'
 
     steps:
-    - name: Checkout contrib-stats branch
+    - name: Checkout current branch
       uses: actions/checkout@v4
       with:
-        ref: contrib-stats
         fetch-depth: 0
 
     - name: Set up Python
@@ -112,10 +112,10 @@ jobs:
         主分支: ${{ secrets.MAIN_BRANCH || 'rvck-6.6' }}
         起始标签: ${{ steps.get_start_tag.outputs.start_tag }}"
 
-        # 推送到contrib-stats分支
-        git push origin contrib-stats
+        # 推送到当前分支
+        git push origin HEAD
 
-        echo "✓ 变更已提交并推送到 contrib-stats 分支"
+        echo "✓ 变更已提交并推送到 ${{ github.ref_name }} 分支"
 
     - name: No changes detected
       if: steps.check_changes.outputs.changes == 'false' && inputs.force_update == 'false'
