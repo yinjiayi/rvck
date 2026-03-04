@@ -723,12 +723,10 @@ pie title 各机构贡献占比
 
         return content
 
-    def generate_company_page(self, company, info, stats):
-        """生成单个机构的详情页"""
-
+    def _generate_page_header(self, company, info, stats):
+        """生成页面头部（公共部分）"""
         company_stats = stats['companies'][company]
 
-        # 生成分类统计文本
         cat_stats = company_stats.get('categories', {})
         cat_lines = []
         for cat, count in sorted(cat_stats.items(), key=lambda x: x[1], reverse=True):
@@ -736,7 +734,6 @@ pie title 各机构贡献占比
                 cat_lines.append(f"- {cat}: {count}")
         categories_text = '\n'.join(cat_lines) if cat_lines else "暂无分类数据"
 
-        # 生成硬件统计文本
         hw_stats = company_stats.get('hardware', {})
         hw_lines = []
         for hw, count in sorted(hw_stats.items(), key=lambda x: x[1], reverse=True):
@@ -766,64 +763,6 @@ pie title 各机构贡献占比
 ### 硬件支持分布
 
 {hardware_text}
-
-## 📧 识别规则
-
-- **邮箱后缀**: {', '.join(info['suffixes'])}
-"""
-
-        if info['specific_emails']:
-            content += f"- **特定签名**: {', '.join(info['specific_emails'])}\n"
-
-        content += f"""
-## 📋 提交列表
-
-| 提交哈希 | 日期 | 原始作者 | 标题 |
-|----------|------|----------|------|
-"""
-
-        # 显示所有提交（如果没有太多）
-        max_display = 200  # 最多显示200个
-        display_commits = company_stats['commits'][:max_display]
-
-        for commit in display_commits:
-            date_short = commit['date'][:10] if 'T' in commit['date'] else commit['date'][:10]
-            repo = os.environ.get('GITHUB_REPOSITORY', 'your/repo')
-            # 链接指向具体的 commit
-            content += f"| [{commit['hash'][:8]}](https://github.com/{repo}/commit/{commit['hash']}) | {date_short} | {commit['author_name']} | {commit['subject'][:80]}... |\n"
-
-        if company_stats['count'] > max_display:
-            content += f"\n*注：只显示前{max_display}个提交，共 {company_stats['count']} 个提交*\n"
-
-        content += f"""
-
-## 🔙 返回
-
-[← 返回统计主页](../index.md)
-
----
-
-*本页面最后更新于 {stats['generated_at']}*
-*数据来源: 主分支 {stats['main_branch']}@{stats['main_commit']}*
-"""
-
-        return content
-
-    def _generate_page_header(self, company, info, stats):
-        """生成页面头部（公共部分）"""
-        company_stats = stats['companies'][company]
-
-        content = f"""# {company} 贡献详情
-
-<div style="background-color: {info['color']}20; padding: 15px; border-radius: 8px; border-left: 5px solid {info['color']};">
-<p><strong>📊 统计信息</strong></p>
-<ul>
-<li><strong>贡献提交数</strong>: {company_stats['count']}</li>
-<li><strong>统计时间</strong>: {stats['generated_at']}</li>
-<li><strong>主分支</strong>: {stats['main_branch']}</li>
-<li><strong>起始标签</strong>: {stats['start_tag']}</li>
-</ul>
-</div>
 
 ## 📧 识别规则
 
