@@ -312,36 +312,39 @@ class ContribStats:
 
         stats = {}
         try:
-            # Issues
+            # 使用 GitHub API 获取仓库基本信息（包含 open issues 计数）
+            req = urllib.request.Request(f"{base_url}", headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                import json
+                repo_info = json.loads(resp.read().decode('utf-8'))
+                stats['open_issues'] = repo_info.get('open_issues_count', 0)
+
+            # 使用 search API 获取 closed issues 数量
+            # GitHub issues 端点会同时返回 PRs，需要用 search API 过滤
             for state in ['open', 'closed']:
                 req = urllib.request.Request(
-                    f"{base_url}/issues?state={state}&per_page=1",
+                    f"https://api.github.com/search/issues?q=repo:{repo.replace('/', '%2F')}+is:issue+state:{state}",
                     headers=headers
                 )
                 with urllib.request.urlopen(req, timeout=10) as resp:
-                    # 从 Link header 获取总数
-                    link = resp.headers.get('Link', '')
-                    if 'rel="last"' in link:
-                        import re
-                        match = re.search(r'page=(\d+)>; rel="last"', link)
-                        stats[f'{state}_issues'] = int(match.group(1)) if match else 0
+                    import json
+                    result = json.loads(resp.read().decode('utf-8'))
+                    count = result.get('total_count', 0)
+                    if state == 'open':
+                        stats['open_issues'] = count  # 覆盖之前的值，更精确
                     else:
-                        stats[f'{state}_issues'] = 0
+                        stats['closed_issues'] = count
 
-            # PRs
+            # PRs - 使用 pulls 端点
             for state, key in [('open', 'open_prs'), ('closed', 'closed_prs')]:
                 req = urllib.request.Request(
-                    f"{base_url}/pulls?state={state}&per_page=1",
+                    f"{base_url}/pulls?state={state}&per_page=100",
                     headers=headers
                 )
                 with urllib.request.urlopen(req, timeout=10) as resp:
-                    link = resp.headers.get('Link', '')
-                    if 'rel="last"' in link:
-                        import re
-                        match = re.search(r'page=(\d+)>; rel="last"', link)
-                        stats[key] = int(match.group(1)) if match else 0
-                    else:
-                        stats[key] = 0
+                    import json
+                    pulls = json.loads(resp.read().decode('utf-8'))
+                    stats[key] = len(pulls)
 
             return stats
         except Exception as e:
@@ -377,13 +380,9 @@ class ContribStats:
             result['is_backport'] = True
 
         # 解析 hardware: xxx
-        hw_match = re.search(r'^hardware:\s*(\w*)', header, re.MULTILINE | re.IGNORECASE)
+        hw_match = re.search(r'^hardware:\s*(\w+)', header, re.MULTILINE | re.IGNORECASE)
         if hw_match:
-            hw_value = hw_match.group(1).strip()
-            if hw_value:
-                result['hardware'] = hw_value.lower()
-            else:
-                result['hardware'] = 'generic'
+            result['hardware'] = hw_match.group(1).lower()
 
         return result
 
