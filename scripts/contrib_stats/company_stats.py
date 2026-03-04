@@ -120,18 +120,25 @@ class ContribStats:
 
         return "unknown"
 
-    def clone_shallow_repo(self, tmp_dir):
-        """创建浅克隆仓库，返回凭证文件路径以便后续清理"""
+    def clone_shallow_repo(self, tmp_dir, branch=None):
+        """创建浅克隆仓库，返回凭证文件路径以便后续清理
 
-        print(f"创建浅克隆（深度: {self.clone_depth}）...")
+        Args:
+            tmp_dir: 临时目录
+            branch: 指定要克隆的分支，默认为空（使用默认分支）
+        """
+
+        branch_arg = f"--branch {branch} --single-branch" if branch else ""
+        print(f"创建浅克隆（深度: {self.clone_depth}，分支: {branch or '默认'}）...")
 
         # 1. 访问原始 URL（可能适用于公共仓库）
         clone_cmd = (
             f"git clone --bare --filter=blob:none "
             f"--depth={self.clone_depth} "
+            f"{branch_arg} "
             f"{self.remote_url} "
             f"{tmp_dir}"
-        )
+        ).strip()
 
         stdout, stderr, code = self.run_git(clone_cmd, check_error=False)
 
@@ -371,7 +378,7 @@ class ContribStats:
         header = parts[0] if parts else commit_body
 
         # 解析 category: xxx
-        cat_match = re.search(r'^category:\s*(\w+)', header, re.MULTILINE | re.IGNORECASE)
+        cat_match = re.search(r'^category:[ \t]*(\w+)', header, re.MULTILINE | re.IGNORECASE)
         if cat_match:
             result['category'] = cat_match.group(1).lower()
 
@@ -380,7 +387,7 @@ class ContribStats:
             result['is_backport'] = True
 
         # 解析 hardware: xxx
-        hw_match = re.search(r'^hardware:\s*(\w+)', header, re.MULTILINE | re.IGNORECASE)
+        hw_match = re.search(r'^hardware:[ \t]*(\w+)', header, re.MULTILINE | re.IGNORECASE)
         if hw_match:
             result['hardware'] = hw_match.group(1).lower()
 
@@ -422,8 +429,8 @@ class ContribStats:
         with tempfile.TemporaryDirectory() as tmp_dir:
             cred_file = None
             try:
-                # 1. 创建浅克隆
-                clone_success, cred_file = self.clone_shallow_repo(tmp_dir)
+                # 1. 创建浅克隆（指定分支）
+                clone_success, cred_file = self.clone_shallow_repo(tmp_dir, branch=self.main_branch)
                 if not clone_success:
                     return None
 
