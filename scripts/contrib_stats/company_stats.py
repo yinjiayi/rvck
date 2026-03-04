@@ -313,6 +313,12 @@ class ContribStats:
         if delete_match:
             deletions = int(delete_match.group(1))
 
+        # 调试：如需查看大改动提交，设置环境变量 DEBUG_LARGE_COMMITS=1
+        if os.environ.get('DEBUG_LARGE_COMMITS') == '1':
+            total = insertions + deletions
+            if total > 10000:
+                print(f"  [DEBUG] 大改动提交 {commit_hash[:8]}: +{insertions}/-{deletions}")
+
         return {'insertions': insertions, 'deletions': deletions}
 
     def analyze_commits(self):
@@ -355,6 +361,12 @@ class ContribStats:
                     if (i + 1) % 50 == 0:
                         print(f"已分析 {i + 1}/{len(commits)} 个提交")
 
+                    # 调试：如需查看特定提交归属，设置 DEBUG_COMMIT_SUBJECT="关键字"
+                    debug_subject = os.environ.get('DEBUG_COMMIT_SUBJECT')
+                    if debug_subject and debug_subject in commit['subject']:
+                        print(f"\n[DEBUG] 找到目标提交: {commit['hash'][:8]} - {commit['subject'][:60]}")
+                        print(f"[DEBUG]   Author: {commit['author_name']} <{commit['author_email']}>")
+
                     # 获取代码修改统计
                     commit_stats = self.get_commit_stats(tmp_dir, commit['hash'])
                     commit['insertions'] = commit_stats['insertions']
@@ -378,6 +390,8 @@ class ContribStats:
                         stats['companies'][author_company]['deletions'] += commit_stats['deletions']
                         stats['companies'][author_company]['commits'].append(commit)
                         stats['commits_with_company'] += 1
+                        if debug_subject and debug_subject in commit['subject']:
+                            print(f"[DEBUG]   归属(Author): {author_company}\n")
                     else:
                         # Author不属于任何机构，检查签名中的机构
                         signature_companies = set()
@@ -398,9 +412,13 @@ class ContribStats:
                                 stats['companies'][company]['insertions'] += commit_stats['insertions']
                                 stats['companies'][company]['deletions'] += commit_stats['deletions']
                                 stats['companies'][company]['commits'].append(commit)
+                            if debug_subject and debug_subject in commit['subject']:
+                                print(f"[DEBUG]   归属(Signed-off-by): {', '.join(signature_companies)}\n")
                         else:
                             # 没有机构相关签名
                             stats['no_company_commits'].append(commit)
+                            if debug_subject and debug_subject in commit['subject']:
+                                print(f"[DEBUG]   归属: 未匹配到任何机构\n")
 
                 return stats
 
