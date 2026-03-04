@@ -254,20 +254,20 @@ class ContribStats:
         return commits
 
     def get_commit_signatures(self, tmp_dir, commit_hash):
-        """从克隆中获取提交的签名信息"""
+        """从克隆中获取提交的签名信息和完整body"""
 
         show_cmd = f"git show --no-patch --format=%B {commit_hash}"
         stdout, stderr, code = self.run_git(show_cmd, cwd=tmp_dir)
 
         if code != 0:
-            return []
+            return [], ""
 
         signatures = []
         for line in stdout.split('\n'):
             if line.strip().lower().startswith('signed-off-by:'):
                 signatures.append(line.strip())
 
-        return signatures
+        return signatures, stdout
 
     def get_company_by_email(self, email):
         """根据邮箱判断机构归属"""
@@ -292,6 +292,100 @@ class ContribStats:
                         return company
 
         return None
+
+    def fetch_github_stats(self):
+        """获取 GitHub Issue 和 PR 统计数据"""
+        import urllib.request
+        import urllib.error
+
+        token = os.environ.get('GITHUB_TOKEN')
+        if not token:
+            print("警告: 未设置 GITHUB_TOKEN，跳过 GitHub 统计")
+            return None
+
+        repo = os.environ.get('GITHUB_REPOSITORY', 'RVCK-Project/rvck')
+        base_url = f"https://api.github.com/repos/{repo}"
+        headers = {
+            'Authorization': f'token {token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+
+        stats = {}
+        try:
+            # Issues
+            for state in ['open', 'closed']:
+                req = urllib.request.Request(
+                    f"{base_url}/issues?state={state}&per_page=1",
+                    headers=headers
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    # 从 Link header 获取总数
+                    link = resp.headers.get('Link', '')
+                    if 'rel="last"' in link:
+                        import re
+                        match = re.search(r'page=(\d+)>; rel="last"', link)
+                        stats[f'{state}_issues'] = int(match.group(1)) if match else 0
+                    else:
+                        stats[f'{state}_issues'] = 0
+
+            # PRs
+            for state, key in [('open', 'open_prs'), ('closed', 'closed_prs')]:
+                req = urllib.request.Request(
+                    f"{base_url}/pulls?state={state}&per_page=1",
+                    headers=headers
+                )
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    link = resp.headers.get('Link', '')
+                    if 'rel="last"' in link:
+                        import re
+                        match = re.search(r'page=(\d+)>; rel="last"', link)
+                        stats[key] = int(match.group(1)) if match else 0
+                    else:
+                        stats[key] = 0
+
+            return stats
+        except Exception as e:
+            print(f"获取 GitHub 统计失败: {e}")
+            return None
+
+    def parse_commit_categories(self, commit_body):
+        """解析提交中的分类标签
+
+        返回: {
+            'category': str or None,  # feature/bugfix/cleanup/config
+            'is_backport': bool,      # mainline inclusion
+            'hardware': str or None   # 硬件平台或 None
+        }
+        """
+        result = {
+            'category': None,
+            'is_backport': False,
+            'hardware': None
+        }
+
+        # 获取分割线以上的内容
+        parts = commit_body.split('--------------------------------', 1)
+        header = parts[0] if parts else commit_body
+
+        # 解析 category: xxx
+        cat_match = re.search(r'^category:\s*(\w+)', header, re.MULTILINE | re.IGNORECASE)
+        if cat_match:
+            result['category'] = cat_match.group(1).lower()
+
+        # 解析 mainline inclusion (backport)
+        if re.search(r'^mainline inclusion', header, re.MULTILINE | re.IGNORECASE):
+            result['is_backport'] = True
+
+        # 解析 hardware: xxx
+        hw_match = re.search(r'^hardware:\s*(\w*)', header, re.MULTILINE | re.IGNORECASE)
+        if hw_match:
+            hw_value = hw_match.group(1).strip()
+            if hw_value:
+                result['hardware'] = hw_value.lower()
+            else:
+                result['hardware'] = 'generic'
+
+        return result
 
     def get_commit_stats(self, clone_dir, commit_hash):
         """获取提交的代码修改统计（insert/delete行数）"""
@@ -348,8 +442,13 @@ class ContribStats:
                     'commits_with_company': 0,
                     'total_insertions': 0,
                     'total_deletions': 0,
-                    'companies': {company: {'count': 0, 'insertions': 0, 'deletions': 0, 'commits': []} for company in self.companies},
+                    'companies': {company: {'count': 0, 'insertions': 0, 'deletions': 0, 'commits': [],
+                                            'categories': {'feature': 0, 'bugfix': 0, 'cleanup': 0, 'config': 0, 'other': 0},
+                                            'backports': 0, 'hardware': {}} for company in self.companies},
                     'no_company_commits': [],
+                    'categories': {'feature': 0, 'bugfix': 0, 'cleanup': 0, 'config': 0, 'other': 0},
+                    'backports': 0,
+                    'hardware': {},
                     'generated_at': self.timestamp,
                     'main_branch': self.main_branch,
                     'main_commit': self.main_commit,
@@ -376,12 +475,25 @@ class ContribStats:
                     stats['total_insertions'] += commit_stats['insertions']
                     stats['total_deletions'] += commit_stats['deletions']
 
-                    # 获取签名信息
-                    signatures = self.get_commit_signatures(tmp_dir, commit['hash'])
+                    # 获取签名信息和提交body
+                    signatures, commit_body = self.get_commit_signatures(tmp_dir, commit['hash'])
                     commit['signatures'] = signatures
+
+                    # 解析分类标签
+                    categories = self.parse_commit_categories(commit_body)
+                    commit['categories'] = categories
 
                     # 确定提交所属机构
                     author_company = self.get_company_by_email(commit['author_email'])
+
+                    # 更新总体分类统计
+                    cat = categories.get('category', 'other') or 'other'
+                    stats['categories'][cat] = stats['categories'].get(cat, 0) + 1
+                    if categories.get('is_backport'):
+                        stats['backports'] += 1
+                    if categories.get('hardware'):
+                        hw = categories['hardware']
+                        stats['hardware'][hw] = stats['hardware'].get(hw, 0) + 1
 
                     if author_company:
                         # Author属于某个机构，只统计该机构
@@ -389,6 +501,12 @@ class ContribStats:
                         stats['companies'][author_company]['insertions'] += commit_stats['insertions']
                         stats['companies'][author_company]['deletions'] += commit_stats['deletions']
                         stats['companies'][author_company]['commits'].append(commit)
+                        # 更新机构分类统计
+                        stats['companies'][author_company]['categories'][cat] = stats['companies'][author_company]['categories'].get(cat, 0) + 1
+                        if categories.get('is_backport'):
+                            stats['companies'][author_company]['backports'] += 1
+                        if categories.get('hardware'):
+                            stats['companies'][author_company]['hardware'][hw] = stats['companies'][author_company]['hardware'].get(hw, 0) + 1
                         stats['commits_with_company'] += 1
                         if debug_subject and debug_subject in commit['subject']:
                             print(f"[DEBUG]   归属(Author): {author_company}\n")
@@ -412,6 +530,13 @@ class ContribStats:
                                 stats['companies'][company]['insertions'] += commit_stats['insertions']
                                 stats['companies'][company]['deletions'] += commit_stats['deletions']
                                 stats['companies'][company]['commits'].append(commit)
+                                # 更新机构分类统计
+                                stats['companies'][company]['categories'][cat] = stats['companies'][company]['categories'].get(cat, 0) + 1
+                                if categories.get('is_backport'):
+                                    stats['companies'][company]['backports'] += 1
+                                if categories.get('hardware'):
+                                    hw = categories['hardware']
+                                    stats['companies'][company]['hardware'][hw] = stats['companies'][company]['hardware'].get(hw, 0) + 1
                             if debug_subject and debug_subject in commit['subject']:
                                 print(f"[DEBUG]   归属(Signed-off-by): {', '.join(signature_companies)}\n")
                         else:
@@ -425,6 +550,26 @@ class ContribStats:
             finally:
                 # 确保凭证被清理
                 self.cleanup_credentials(cred_file)
+
+    def _format_hardware_stats(self, hardware_stats):
+        """格式化硬件平台统计"""
+        if not hardware_stats:
+            return "暂无硬件平台数据"
+        lines = []
+        for hw, count in sorted(hardware_stats.items(), key=lambda x: x[1], reverse=True):
+            lines.append(f"- {hw}: {count}")
+        return '\n'.join(lines)
+
+    def _format_github_stats(self, github_stats):
+        """格式化 GitHub 统计数据"""
+        if not github_stats:
+            return "未获取到 GitHub 统计数据（需要设置 GITHUB_TOKEN）"
+        return f"""| 项目 | 数量 |
+|------|------|
+| Open Issues | {github_stats.get('open_issues', 'N/A')} |
+| Closed Issues | {github_stats.get('closed_issues', 'N/A')} |
+| Open PRs | {github_stats.get('open_prs', 'N/A')} |
+| Closed PRs | {github_stats.get('closed_prs', 'N/A')} |"""
 
     def generate_main_page(self, stats):
         """生成统计主页"""
@@ -469,6 +614,22 @@ class ContribStats:
 ### 📊 代码修改统计
 
 RVCK 累计合入的补丁涉及代码修改：insert 🟢 +{stats.get('total_insertions', 0)} delete 🔴 -{stats.get('total_deletions', 0)}
+
+### 📁 补丁分类统计
+
+| 类别 | 数量 | 说明 |
+|------|------|------|
+| feature | {stats['categories'].get('feature', 0)} | 新功能 |
+| bugfix | {stats['categories'].get('bugfix', 0)} | 缺陷修复 |
+| backport | {stats.get('backports', 0)} | 主线反合 |
+| hardware support | {sum(stats.get('hardware', {}).values())} | 硬件支持 |
+
+**硬件平台分布**:
+{self._format_hardware_stats(stats.get('hardware', {}))}
+
+### 📊 GitHub 仓库统计
+
+{self._format_github_stats(stats.get('github_stats'))}
 
 ## 各机构贡献统计
 
@@ -561,17 +722,44 @@ pie title 各机构贡献占比
 
         company_stats = stats['companies'][company]
 
+        # 生成分类统计文本
+        cat_stats = company_stats.get('categories', {})
+        cat_lines = []
+        for cat, count in sorted(cat_stats.items(), key=lambda x: x[1], reverse=True):
+            if count > 0:
+                cat_lines.append(f"- {cat}: {count}")
+        categories_text = '\n'.join(cat_lines) if cat_lines else "暂无分类数据"
+
+        # 生成硬件统计文本
+        hw_stats = company_stats.get('hardware', {})
+        hw_lines = []
+        for hw, count in sorted(hw_stats.items(), key=lambda x: x[1], reverse=True):
+            if count > 0:
+                hw_lines.append(f"- {hw}: {count}")
+        hardware_text = '\n'.join(hw_lines) if hw_lines else "暂无硬件支持数据"
+
+        backport_count = company_stats.get('backports', 0)
+
         content = f"""# {company} 贡献详情
 
 <div style="background-color: {info['color']}20; padding: 15px; border-radius: 8px; border-left: 5px solid {info['color']};">
 <p><strong>📊 统计信息</strong></p>
 <ul>
 <li><strong>贡献提交数</strong>: {company_stats['count']}</li>
+<li><strong>backport提交数</strong>: {backport_count}</li>
 <li><strong>统计时间</strong>: {stats['generated_at']}</li>
 <li><strong>主分支</strong>: {stats['main_branch']}</li>
 <li><strong>起始标签</strong>: {stats['start_tag']}</li>
 </ul>
 </div>
+
+## 📁 补丁分类统计
+
+{categories_text}
+
+### 硬件支持分布
+
+{hardware_text}
 
 ## 📧 识别规则
 
@@ -918,6 +1106,16 @@ git checkout contrib-stats
         stats = self.analyze_commits()
         if not stats:
             return False
+
+        # 获取 GitHub 统计
+        print("\n获取 GitHub 统计数据...")
+        github_stats = self.fetch_github_stats()
+        if github_stats:
+            stats['github_stats'] = github_stats
+            print("✓ GitHub 统计获取成功")
+        else:
+            stats['github_stats'] = None
+            print("⚠ GitHub 统计获取失败，继续生成报告")
 
         print(f"\n统计完成:")
         print(f"- 总提交数: {stats['total_commits']}")
