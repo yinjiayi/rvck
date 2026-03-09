@@ -609,6 +609,10 @@ class ContribStats:
             row.append(str(company_stat['count']))
             lines.append("| " + " | ".join(row) + " |")
 
+        lines.append("")
+        lines.append("> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。")
+        lines.append("> 因此各分类数字之和可能大于\"总计\"列。")
+
         return "\n".join(lines)
 
     def _generate_category_leaderboards(self, stats):
@@ -750,6 +754,9 @@ RVCK 累计合入的补丁涉及代码修改：insert 🟢 +{stats.get('total_in
 | bugfix | {stats['categories'].get('bugfix', 0)} | 缺陷修复 |
 | backport | {stats.get('backports', 0)} | 主线反合 |
 | hardware support | {sum(stats.get('hardware', {}).values())} | 硬件支持 |
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各分类数量之和可能大于总提交数。
 
 **硬件平台分布**:
 {self._format_hardware_stats(stats.get('hardware', {}))}
@@ -947,6 +954,9 @@ pie title 各机构贡献占比
 ## 📈 贡献分布
 
 {chr(10).join(profile_lines)}
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各维度数量之和可能大于总提交数（{total_count}）。
 
 ### 🔧 硬件支持详情
 
