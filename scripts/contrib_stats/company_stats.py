@@ -793,7 +793,7 @@ RVCK 累计合入的补丁涉及代码修改：insert 🟢 +{stats.get('total_in
 ## 📈 可视化图表
 
 ```mermaid
-pie title 各机构贡献占比
+pie showData title 各机构贡献占比
 """
 
         # 添加Mermaid饼图数据
@@ -806,7 +806,8 @@ pie title 各机构贡献占比
         # 添加无机构贡献的部分
         if len(stats['no_company_commits']) > 0 and stats['total_commits'] > 0:
             no_company_percentage = (len(stats['no_company_commits']) / stats['total_commits'] * 100)
-            content += f'    "其他 ({len(stats["no_company_commits"])}, {no_company_percentage:.1f}%)" : {len(stats["no_company_commits"])}\n'
+            no_count = len(stats['no_company_commits'])
+            content += f'    "其他 ({no_count}, {no_company_percentage:.1f}%)" : {no_count}\n'
 
         content += """```
 
