@@ -3,10 +3,10 @@
 <div style="background-color: #F4433620; padding: 15px; border-radius: 8px; border-left: 5px solid #F44336;">
 <p><strong>📊 核心数据</strong></p>
 <ul>
-<li><strong>贡献提交数</strong>: 286 (占所有机构贡献的 25.8%)</li>
-<li><strong>最活跃领域</strong>: 新功能(feature) (247 个提交)</li>
-<li><strong>统计周期</strong>: v6.6.127 → ce238702</li>
-<li><strong>生成时间</strong>: 2026-03-04 22:05:14</li>
+<li><strong>贡献提交数</strong>: 289 (占所有机构贡献的 25.9%)</li>
+<li><strong>最活跃领域</strong>: 新功能(feature) (250 个提交)</li>
+<li><strong>统计周期</strong>: v6.6.127 → 3c705a33</li>
+<li><strong>生成时间</strong>: 2026-03-09 21:51:52</li>
 </ul>
 </div>
 
@@ -14,13 +14,16 @@
 
 | 贡献维度 | 数量 | 占比 | 说明 |
 |----------|------|------|------|
-| 新功能 | 247 | ████████░░ 86.4% | 新增功能特性 |
-| 缺陷修复 | 39 | █░░░░░░░░░ 13.6% | 修复代码缺陷 |
+| 新功能 | 250 | ████████░░ 86.5% | 新增功能特性 |
+| 缺陷修复 | 39 | █░░░░░░░░░ 13.5% | 修复代码缺陷 |
 | 代码清理 | 0 | ░░░░░░░░░░ 0.0% | 重构和优化 |
 | 配置变更 | 0 | ░░░░░░░░░░ 0.0% | 配置项调整 |
 | 其他贡献 | 0 | ░░░░░░░░░░ 0.0% | 未分类提交 |
-| 主线反合 | 120 | ████░░░░░░ 42.0% | 同步主线代码 |
-| 硬件支持 | 104 | ███░░░░░░░ 36.4% | 硬件平台适配 |
+| 主线反合 | 123 | ████░░░░░░ 42.6% | 同步主线代码 |
+| 硬件支持 | 104 | ███░░░░░░░ 36.0% | 硬件平台适配 |
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各维度数量之和可能大于总提交数（289）。
 
 ### 🔧 硬件支持详情
 
@@ -35,6 +38,9 @@
 
 | 提交哈希 | 日期 | 原始作者 | 标题 |
 |----------|------|----------|------|
+| [2bc370c1](https://github.com/RVCK-Project/rvck/commit/2bc370c137490aefc1345575d69fd05ef4563209) | 2023-09-21 | Yu Chien Peter Lin | riscv: Introduce NAPOT field to PTDUMP |
+| [02b0b93c](https://github.com/RVCK-Project/rvck/commit/02b0b93cfa8a76a79be96a9db6a150c4128f1b54) | 2023-09-21 | Yu Chien Peter Lin | riscv: Introduce PBMT field to PTDUMP |
+| [c7320609](https://github.com/RVCK-Project/rvck/commit/c73206091a58b62eab6509045a50104dd7b0d652) | 2023-09-21 | Yu Chien Peter Lin | riscv: Improve PTDUMP to show RSW with non-zero value |
 | [3f6c3b96](https://github.com/RVCK-Project/rvck/commit/3f6c3b9681d1351cf51f47e5f3fa7f5f82380b75) | 2024-04-20 | Atish Patra | KVM: riscv: selftests: Add commandline option for SBI PMU test |
 | [fa8f8925](https://github.com/RVCK-Project/rvck/commit/fa8f89253fc63525239dab7a67caabae86c8216a) | 2024-04-20 | Atish Patra | KVM: riscv: selftests: Add a test for counter overflow |
 | [6466d407](https://github.com/RVCK-Project/rvck/commit/6466d407f026d12b01dc3e940b140355e38e2e18) | 2024-04-20 | Atish Patra | KVM: riscv: selftests: Add a test for PMU snapshot functionality |
@@ -323,7 +329,7 @@
 | [dd7e0907](https://github.com/RVCK-Project/rvck/commit/dd7e0907519a8d8e7dd20a625e88a9a86590ce40) | 2024-03-18 | Heiko Stuebner | T-Head C9xx cores implement an older version (0.7.1) of the vector specification... |
 ---
 
-**共 286 条提交（显示全部）**
+**共 289 条提交（显示全部）**
 
 [分页显示](阿里达摩院.md) | [纯文本视图](阿里达摩院_commits.txt)
 ## 🔙 返回
@@ -332,5 +338,5 @@
 
 ---
 
-*本页面最后更新于 2026-03-04 22:05:14*
-*数据来源: 主分支 tmp-stats@ce238702*
+*本页面最后更新于 2026-03-09 21:51:52*
+*数据来源: 主分支 tmp-stats@3c705a33*

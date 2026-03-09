@@ -3,10 +3,10 @@
 <div style="background-color: #FF980020; padding: 15px; border-radius: 8px; border-left: 5px solid #FF9800;">
 <p><strong>📊 核心数据</strong></p>
 <ul>
-<li><strong>贡献提交数</strong>: 252 (占所有机构贡献的 22.8%)</li>
-<li><strong>最活跃领域</strong>: 主线反合(backport) (230 个提交)</li>
-<li><strong>统计周期</strong>: v6.6.127 → ce238702</li>
-<li><strong>生成时间</strong>: 2026-03-04 22:05:14</li>
+<li><strong>贡献提交数</strong>: 256 (占所有机构贡献的 23.0%)</li>
+<li><strong>最活跃领域</strong>: 主线反合(backport) (234 个提交)</li>
+<li><strong>统计周期</strong>: v6.6.127 → 3c705a33</li>
+<li><strong>生成时间</strong>: 2026-03-09 21:51:52</li>
 </ul>
 </div>
 
@@ -14,13 +14,16 @@
 
 | 贡献维度 | 数量 | 占比 | 说明 |
 |----------|------|------|------|
-| 新功能 | 197 | ███████░░░ 78.2% | 新增功能特性 |
-| 缺陷修复 | 53 | ██░░░░░░░░ 21.0% | 修复代码缺陷 |
+| 新功能 | 201 | ███████░░░ 78.5% | 新增功能特性 |
+| 缺陷修复 | 53 | ██░░░░░░░░ 20.7% | 修复代码缺陷 |
 | 代码清理 | 0 | ░░░░░░░░░░ 0.0% | 重构和优化 |
 | 配置变更 | 2 | ░░░░░░░░░░ 0.8% | 配置项调整 |
 | 其他贡献 | 0 | ░░░░░░░░░░ 0.0% | 未分类提交 |
-| 主线反合 | 230 | █████████░ 91.3% | 同步主线代码 |
+| 主线反合 | 234 | █████████░ 91.4% | 同步主线代码 |
 | 硬件支持 | 0 | ░░░░░░░░░░ 0.0% | 硬件平台适配 |
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各维度数量之和可能大于总提交数（256）。
 
 ### 🔧 硬件支持详情
 
@@ -34,6 +37,10 @@
 
 | 提交哈希 | 日期 | 原始作者 | 标题 |
 |----------|------|----------|------|
+| [fa04c8e4](https://github.com/RVCK-Project/rvck/commit/fa04c8e48602e5e405fbb419c9d7bc6aa739fbe8) | 2023-10-03 | Jason Gunthorpe | iommu: Do not use IOMMU_DOMAIN_DMA if CONFIG_IOMMU_DMA is not enabled |
+| [c1c46c34](https://github.com/RVCK-Project/rvck/commit/c1c46c349ce80a022aa17695ce3fbc44c31d3bfd) | 2023-09-13 | Jason Gunthorpe | iommu: Convert remaining simple drivers to domain_alloc_paging() |
+| [af94d2d8](https://github.com/RVCK-Project/rvck/commit/af94d2d8f42d4a5812eb58dde7c48110c3e290dd) | 2023-09-13 | Jason Gunthorpe | iommu: Convert simple drivers with DOMAIN_DMA to domain_alloc_paging() |
+| [8bf778e3](https://github.com/RVCK-Project/rvck/commit/8bf778e3cb05ca652c351798bbb526e7465b3231) | 2023-09-13 | Jason Gunthorpe | iommu: Add ops-\>domain_alloc_paging() |
 | [c30c0226](https://github.com/RVCK-Project/rvck/commit/c30c022616af1a3cfe8d3ed1da2fabe7dc14ebdc) | 2023-09-13 | Jason Gunthorpe | iommu: Add __iommu_group_domain_alloc() |
 | [d93cd234](https://github.com/RVCK-Project/rvck/commit/d93cd2347934e36e7c2eba3a47757f1c24d6ff9c) | 2023-09-13 | Jason Gunthorpe | iommu: Require a default_domain for all iommu drivers |
 | [6d5fd48a](https://github.com/RVCK-Project/rvck/commit/6d5fd48a0c0b4a99f2031ccfe92553d709ca1542) | 2023-09-13 | Jason Gunthorpe | iommu/sun50i: Add an IOMMU_IDENTITIY_DOMAIN |
@@ -88,7 +95,7 @@
 | [aadb0bee](https://github.com/RVCK-Project/rvck/commit/aadb0bee7df8cddd8169e8025218753e59b2bc8e) | 2024-01-17 | Haibo Xu | ACPICA: SRAT: Add RISC-V RINTC affinity structure |
 ---
 
-**共 252 条提交，显示 201-252**
+**共 256 条提交，显示 201-256**
 
 [1](中兴通讯.md) **[2]**
 
@@ -99,5 +106,5 @@
 
 ---
 
-*本页面最后更新于 2026-03-04 22:05:14*
-*数据来源: 主分支 tmp-stats@ce238702*
+*本页面最后更新于 2026-03-09 21:51:52*
+*数据来源: 主分支 tmp-stats@3c705a33*

@@ -3,10 +3,10 @@
 <div style="background-color: #FF980020; padding: 15px; border-radius: 8px; border-left: 5px solid #FF9800;">
 <p><strong>📊 核心数据</strong></p>
 <ul>
-<li><strong>贡献提交数</strong>: 252 (占所有机构贡献的 22.8%)</li>
-<li><strong>最活跃领域</strong>: 主线反合(backport) (230 个提交)</li>
-<li><strong>统计周期</strong>: v6.6.127 → ce238702</li>
-<li><strong>生成时间</strong>: 2026-03-04 22:05:14</li>
+<li><strong>贡献提交数</strong>: 256 (占所有机构贡献的 23.0%)</li>
+<li><strong>最活跃领域</strong>: 主线反合(backport) (234 个提交)</li>
+<li><strong>统计周期</strong>: v6.6.127 → 3c705a33</li>
+<li><strong>生成时间</strong>: 2026-03-09 21:51:52</li>
 </ul>
 </div>
 
@@ -14,13 +14,16 @@
 
 | 贡献维度 | 数量 | 占比 | 说明 |
 |----------|------|------|------|
-| 新功能 | 197 | ███████░░░ 78.2% | 新增功能特性 |
-| 缺陷修复 | 53 | ██░░░░░░░░ 21.0% | 修复代码缺陷 |
+| 新功能 | 201 | ███████░░░ 78.5% | 新增功能特性 |
+| 缺陷修复 | 53 | ██░░░░░░░░ 20.7% | 修复代码缺陷 |
 | 代码清理 | 0 | ░░░░░░░░░░ 0.0% | 重构和优化 |
 | 配置变更 | 2 | ░░░░░░░░░░ 0.8% | 配置项调整 |
 | 其他贡献 | 0 | ░░░░░░░░░░ 0.0% | 未分类提交 |
-| 主线反合 | 230 | █████████░ 91.3% | 同步主线代码 |
+| 主线反合 | 234 | █████████░ 91.4% | 同步主线代码 |
 | 硬件支持 | 0 | ░░░░░░░░░░ 0.0% | 硬件平台适配 |
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各维度数量之和可能大于总提交数（256）。
 
 ### 🔧 硬件支持详情
 
@@ -34,6 +37,10 @@
 
 | 提交哈希 | 日期 | 原始作者 | 标题 |
 |----------|------|----------|------|
+| [3c705a33](https://github.com/RVCK-Project/rvck/commit/3c705a336bf97a47b525a74ce6b6d721d693bd61) | 2024-03-01 | Samuel Holland | riscv: mm: Fix prototype to avoid discarding const |
+| [9f434fcb](https://github.com/RVCK-Project/rvck/commit/9f434fcb7229caf8dafcc7731f2d7b827c626f87) | 2024-01-30 | Alexandre Ghiti | riscv: Fix arch_tlbbatch_flush() by clearing the batch cpumask |
+| [a7e5472d](https://github.com/RVCK-Project/rvck/commit/a7e5472d05f08ea9b9f180ee4171b57813846868) | 2024-01-08 | Alexandre Ghiti | riscv: Add support for BATCHED_UNMAP_TLB_FLUSH |
+| [51ca81f2](https://github.com/RVCK-Project/rvck/commit/51ca81f22b7995b82b5b47e9249f464b4cea71a0) | 2023-10-30 | Alexandre Ghiti | riscv: Improve flush_tlb_range() for hugetlb pages |
 | [ce238702](https://github.com/RVCK-Project/rvck/commit/ce238702010b888c6b3fb62129a19b122c909fb1) | 2026-02-05 | shenlin | perf vendor events riscv: fix lrw core PMU event mapping |
 | [9b184121](https://github.com/RVCK-Project/rvck/commit/9b184121b2529b212c8c4ccc49d770871b2c4087) | 2024-06-05 | Björn Töpel | riscv: Enable DAX VMEMMAP optimization |
 | [4d1b8cb1](https://github.com/RVCK-Project/rvck/commit/4d1b8cb120f611576cc62ccd9a0c0bf1bd776fd7) | 2024-06-05 | Björn Töpel | riscv: mm: Add support for ZONE_DEVICE |
@@ -288,7 +295,7 @@
 | [aadb0bee](https://github.com/RVCK-Project/rvck/commit/aadb0bee7df8cddd8169e8025218753e59b2bc8e) | 2024-01-17 | Haibo Xu | ACPICA: SRAT: Add RISC-V RINTC affinity structure |
 ---
 
-**共 252 条提交（显示全部）**
+**共 256 条提交（显示全部）**
 
 [分页显示](中兴通讯.md) | [纯文本视图](中兴通讯_commits.txt)
 ## 🔙 返回
@@ -297,5 +304,5 @@
 
 ---
 
-*本页面最后更新于 2026-03-04 22:05:14*
-*数据来源: 主分支 tmp-stats@ce238702*
+*本页面最后更新于 2026-03-09 21:51:52*
+*数据来源: 主分支 tmp-stats@3c705a33*

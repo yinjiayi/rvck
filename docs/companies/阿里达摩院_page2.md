@@ -3,10 +3,10 @@
 <div style="background-color: #F4433620; padding: 15px; border-radius: 8px; border-left: 5px solid #F44336;">
 <p><strong>📊 核心数据</strong></p>
 <ul>
-<li><strong>贡献提交数</strong>: 286 (占所有机构贡献的 25.8%)</li>
-<li><strong>最活跃领域</strong>: 新功能(feature) (247 个提交)</li>
-<li><strong>统计周期</strong>: v6.6.127 → ce238702</li>
-<li><strong>生成时间</strong>: 2026-03-04 22:05:14</li>
+<li><strong>贡献提交数</strong>: 289 (占所有机构贡献的 25.9%)</li>
+<li><strong>最活跃领域</strong>: 新功能(feature) (250 个提交)</li>
+<li><strong>统计周期</strong>: v6.6.127 → 3c705a33</li>
+<li><strong>生成时间</strong>: 2026-03-09 21:51:52</li>
 </ul>
 </div>
 
@@ -14,13 +14,16 @@
 
 | 贡献维度 | 数量 | 占比 | 说明 |
 |----------|------|------|------|
-| 新功能 | 247 | ████████░░ 86.4% | 新增功能特性 |
-| 缺陷修复 | 39 | █░░░░░░░░░ 13.6% | 修复代码缺陷 |
+| 新功能 | 250 | ████████░░ 86.5% | 新增功能特性 |
+| 缺陷修复 | 39 | █░░░░░░░░░ 13.5% | 修复代码缺陷 |
 | 代码清理 | 0 | ░░░░░░░░░░ 0.0% | 重构和优化 |
 | 配置变更 | 0 | ░░░░░░░░░░ 0.0% | 配置项调整 |
 | 其他贡献 | 0 | ░░░░░░░░░░ 0.0% | 未分类提交 |
-| 主线反合 | 120 | ████░░░░░░ 42.0% | 同步主线代码 |
-| 硬件支持 | 104 | ███░░░░░░░ 36.4% | 硬件平台适配 |
+| 主线反合 | 123 | ████░░░░░░ 42.6% | 同步主线代码 |
+| 硬件支持 | 104 | ███░░░░░░░ 36.0% | 硬件平台适配 |
+
+> 💡 **说明**: 分类标签存在交叉，同一提交可能同时属于多个分类（如 feature+backport+hardware）。
+> 因此各维度数量之和可能大于总提交数（289）。
 
 ### 🔧 硬件支持详情
 
@@ -35,6 +38,9 @@
 
 | 提交哈希 | 日期 | 原始作者 | 标题 |
 |----------|------|----------|------|
+| [89489d01](https://github.com/RVCK-Project/rvck/commit/89489d0178e01258700581d06919929fc4395945) | 2024-09-01 | Xiangyi Zeng | riscv:dts:som: add th1520-lpi4a-product and th1520-lpi4a-product-sec dts file |
+| [e1484a1d](https://github.com/RVCK-Project/rvck/commit/e1484a1d8f8671410e4da3a4261db153c13fb77c) | 2024-09-01 | Xiangyi Zeng | dts:th1520-a: add th1520-a-val.dts and th1520-a-val-sec.dts |
+| [5e01443c](https://github.com/RVCK-Project/rvck/commit/5e01443cf05cc32e94fc4b49e14fabd9b641423f) | 2024-06-21 | Huaming | defconfig:th1520: enable cma config |
 | [5bb481a3](https://github.com/RVCK-Project/rvck/commit/5bb481a3bc4e089ce58fcc99d748e13fa7ade59f) | 2024-09-01 | Huaming | dtb:lipi:enable VI module config |
 | [ad17c151](https://github.com/RVCK-Project/rvck/commit/ad17c151e253824ba08fd5991e8e87fc61c33796) | 2024-09-01 | xianbing Zhu | riscv: config: add MAX_ORDER config for riscv and th1520 |
 | [3927f03f](https://github.com/RVCK-Project/rvck/commit/3927f03fe8f455064d9fcb881e973534d2b2a678) | 2024-09-01 | xianbing Zhu | dts: th1520: add vdec venc and video mem device node |
@@ -123,7 +129,7 @@
 | [dd7e0907](https://github.com/RVCK-Project/rvck/commit/dd7e0907519a8d8e7dd20a625e88a9a86590ce40) | 2024-03-18 | Heiko Stuebner | T-Head C9xx cores implement an older version (0.7.1) of the vector specification... |
 ---
 
-**共 286 条提交，显示 201-286**
+**共 289 条提交，显示 201-289**
 
 [1](阿里达摩院.md) **[2]**
 
@@ -134,5 +140,5 @@
 
 ---
 
-*本页面最后更新于 2026-03-04 22:05:14*
-*数据来源: 主分支 tmp-stats@ce238702*
+*本页面最后更新于 2026-03-09 21:51:52*
+*数据来源: 主分支 tmp-stats@3c705a33*
